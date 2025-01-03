@@ -1,13 +1,12 @@
 {
-  description = "Nix Flake Template for Development";
+  description = "Nix-Winget";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
-    systems.url = "github:nix-systems/default";
+    systems.url = "github:nix-systems/x86_64-linux";
   };
 
   outputs = {
-    self,
     nixpkgs,
     systems,
     ...
@@ -17,23 +16,11 @@
   in {
     formatter = forEachSystem (system: pkgsFor.${system}.alejandra);
 
-    devShells = forEachSystem (system: {
-      default = pkgsFor.${system}.mkShell {
-        packages = with pkgsFor.${system}; [
-          hello
-        ];
-      };
-    });
-
-    packages = forEachSystem (system: {
-      default = pkgsFor.${system}.hello;
-    });
-
-    apps = forEachSystem (system: {
-      default = {
-        type = "app";
-        program = "${self.packages.${system}.default}/bin/hello";
-      };
-    });
+    nixosModules = let
+      nix-winget = import ./src;
+    in {
+      default = nix-winget;
+      inherit nix-winget;
+    };
   };
 }
